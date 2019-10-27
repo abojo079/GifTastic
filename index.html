@@ -4,93 +4,133 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <style type="text/css">
+        button,
+        div,
+        form,
+        input {
+          margin: 10px;
+        }
+      </style>
 </head>
 <body>
 
-        <body class="topicButtons">
-                <button data-topic="macaws">Macaws</button>
-                <button data-topic="yorkies">
-                Yorkies
-                </button>
-              
-                <button data-topic="joker">
-                     Joker
-                </button>
-                <button data-topic="batman">
-                    Batman
-                </button>
-                <button data-topic="harley Quinn">
-             Harley Quinn
-                </button>
-            </br>
-                <div class= "form">
-                <form id="topic-form">
-                        <label for="topic-input">Add your Favorite Topic!</label>
-                        <input type="text" id="topic-input">
-                        <br>
-                  
-                        <!-- Button triggers new movie to be added -->
-                        <input id="add-topic" type="submit" value="favorite topic">
-                      </form>
-
-                  
-                  
+        <div>
+                <h3>DC Characters Search</h3>
+            
+                <!-- Rendered Buttons will get Dumped Here  -->
+                <div id="buttons-view"></div>
+            
+                <form id="dc-form">
+                        Add buttons for your favorite DC Superheroes!:<br>
+                        <input type = "text" name = "dc-show" id = "dc-input">
+                        <input type = "submit" value = "Submit" class = "btn" id = "submit">
+            
+                </form>
+            
+                <div id = "gif-container">
                     </div>
 
 
+</div>
 
-        
-                <div id="gifs-appear-here">
-
-
-                </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+ <script type="text/javascript">
+        
+let characters = ["Batman", "Joker", "Catwoman", "Batgirl", "Teen Titans","Superman", "Wonderwoman", "Green Lantern", "Shazam", "Justice League",
+"Aquaman", "The Flash", "Harley Quinn", "Poison Ivy", "Nightwing","The Penguin", "The Riddler", "Robin"];     
 
-<script type="text/javascript">
-const queryURL = "https://api.giphy.com/v1/gifs/trending?api_key=BkaUZZWcFij6J7AoQj3WtPb1R2p9O6V9";
+       
+function renderButtons() {
 
-$("button").on("click", function() {
-      // In this case, the "this" keyword refers to the button that was clicked
-      var favTopic = $(this).attr("data-topic");
+// Deleting the movies prior to adding new movies
+// (this is necessary otherwise you will have repeat buttons)
+$("#buttons-view").empty();
 
-      // Constructing a URL to search Giphy for the name of the person who said the quote
-      var queryURL = "https://api.giphy.com/v1/gifs/search?q=" +
-        favTopic + "&api_key=kNLs8pw0HBaLzfxjzul3T2viI0UEp1xz&limit=10";
+// Looping through the array of movies
+for (let i = 0; i < characters.length; i++) {
 
-      // Performing an AJAX request with the queryURL
-      $.ajax({
-        url: queryURL,
-        method: "GET"
-      })
-        // After data comes back from the request
-        .then(function(response) {
-          console.log(queryURL);
+  // Then dynamicaly generating buttons for each movie in the array
+  // This code $("<button>") is all jQuery needs to create the beginning and end tag. (<button></button>)
+  let nButton = $("<button>");
+  // Adding a class of movie-btn to our button
+  nButton.addClass("dc-btn");
+  // Adding a data-attribute
+  nButton.attr("data-name", characters[i]);
+  // Providing the initial button text
+  nButton.text(characters[i]);
+  // Adding the button to the buttons-view div
+  $("#buttons-view").append(nButton);
 
-          console.log(response);
-          // storing the data from the AJAX request in the results variable
-          var results = response.data;
+}
+$(".dc-btn").unbind("click");
 
-          for (var i = 0; i < results.length; i++) {
-
-            var topicsDiv = $("<div>");
-
-         var p = $("<p>").text("Rating: " + results[i].rating);
-
-        var topicImage = $("<img>");
-
-        topicImage.attr("src", results[i].images.fixed_height.url);
-
-       topicsDiv.append(p);
-            topicsDiv.append(topicImage);
-
-            $("#gifs-appear-here").prepend(topicsDiv);
-
-          };
-        });
+$(".dc-btn").on("click", function(){
+    $(".gif-image").unbind("click");
+    $("#gif-container").empty();
+    $("#gif-container").removeClass("superhero");
+    displayDCInfo($(this).text());
 });
 
-</script>
+
+
+}  
+
+function addButton(show){
+	if(topics.indexOf(show) === -1) {
+		topics.push(show);
+		$("#button-view").empty();
+		renderButtons();
+	}
+}
+
+        // Calling renderButtons which handles the processing of our movie array
+
     
+      function displayDCInfo(show) {
+
+        $.ajax({
+		url: "https://api.giphy.com/v1/gifs/search?q=" + show + 
+		"&api_key=kNLs8pw0HBaLzfxjzul3T2viI0UEp1xz&limit=10&offset=0&rating=G&lang=en",
+		method: "GET"
+	}).then(function(response){
+		response.data.forEach(function(element){
+			dcDiv = $("<div>");
+			dcDiv.addClass("individual-gif-container");
+			dcDiv.append("<p>Rating: " + element.rating.toUpperCase() + "</p>");
+			let gifImage = $("<img src = '" + element.images.fixed_height_still.url + "'>");
+			gifImage.addClass("gif-image");
+			gifImage.attr("state", "still");
+			gifImage.attr("still-data", element.images.fixed_height_still.url);
+			gifImage.attr("animated-data", element.images.fixed_height.url);
+			dcDiv.append(gifImage);
+			$("#gif-container").append(dcDiv);
+		});
+		
+		$("#gif-container").addClass("superhero");
+		$(".gif-image").unbind("click");
+		$(".gif-image").on("click", function(){
+			if($(this).attr("state") === "still") {
+				$(this).attr("state", "animated");
+				$(this).attr("src", $(this).attr("animated-data"));
+			}
+			else {
+				$(this).attr("state", "still");
+				$(this).attr("src", $(this).attr("still-data"));
+			}
+		});
+	});
+}
+
+$(document).ready(function(){
+	renderButtons();
+	$("#submit").on("click", function(){
+		event.preventDefault();
+		addButton($("#dc-display").val().trim());
+		$("#dc-input").val("");
+	});
+});
+        
+          </script>
 </body>
 </html>
